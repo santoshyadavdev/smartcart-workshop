@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../shared/product';
 import { CartStore } from '../cart/cart.store';
@@ -23,15 +23,14 @@ import { CartStore } from '../cart/cart.store';
           <span class="price">{{ item.price | currency: 'USD' }}</span>
           <span class="rating"><span aria-hidden="true">★</span> {{ item.rating }}</span>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-testid="add-to-cart"
-          [attr.aria-describedby]="'product-' + item.id"
-          (click)="cart.add(item)"
-        >
-          Add to cart
-        </button>
+        <div class="actions">
+          <button type="button" class="heart" [class.saved]="saved()" (click)="saved.set(!saved())">
+            ♥
+          </button>
+          <button type="button" class="quick-add" data-testid="add-to-cart" (click)="cart.add(item)">
+            ＋
+          </button>
+        </div>
       </div>
     </article>
   `,
@@ -82,6 +81,36 @@ import { CartStore } from '../cart/cart.store';
       font-size: 1.0625rem;
       line-height: 1.3;
     }
+    .link:focus {
+      outline: none;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .heart {
+      border: 0;
+      background: none;
+      color: var(--color-border);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .heart.saved {
+      color: #e11d48;
+    }
+    .quick-add {
+      display: grid;
+      place-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 0;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
     .link:hover .name {
       color: var(--color-primary);
     }
@@ -104,4 +133,5 @@ import { CartStore } from '../cart/cart.store';
 export class ProductCard {
   readonly product = input.required<Product>();
   protected readonly cart = inject(CartStore);
+  protected readonly saved = signal(false);
 }
