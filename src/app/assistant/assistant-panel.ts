@@ -69,6 +69,9 @@ import { MAX_MESSAGE_LENGTH } from '../../shared/agent-events';
                   <span class="visually-hidden">Assistant is typing</span>
                 </p>
               }
+              @if (message.id === pendingId() && elapsed() > 2) {
+                <p class="muted thinking" data-testid="assistant-elapsed">Thinking… {{ elapsed() }}s</p>
+              }
               @if (message.products.length) {
                 <ul class="products">
                   @for (product of message.products; track $index) {
@@ -139,6 +142,16 @@ import { MAX_MESSAGE_LENGTH } from '../../shared/agent-events';
           >
             Send
           </button>
+          @if (chat.streaming()) {
+            <button
+              type="button"
+              class="btn btn-ghost"
+              data-testid="assistant-stop"
+              (click)="chat.stop()"
+            >
+              Stop
+            </button>
+          }
         </form>
       </section>
     } @else {
@@ -355,6 +368,8 @@ export class AssistantPanel {
   protected readonly open = signal(false);
   protected readonly draft = signal('');
   protected readonly maxLength = MAX_MESSAGE_LENGTH;
+  /** Seconds the current reply has been streaming. */
+  protected readonly elapsed = signal(0);
   protected readonly canSend = computed(() => !this.chat.streaming() && !!this.draft().trim());
   /** The assistant reply still waiting for its first token. */
   protected readonly pendingId = computed(() => {
@@ -369,6 +384,10 @@ export class AssistantPanel {
   private restoreToggleFocus = false;
 
   constructor() {
+    setInterval(() => {
+      if (this.chat.streaming()) this.elapsed.update((seconds) => seconds + 1);
+      else this.elapsed.set(0);
+    }, 1000);
     // afterRenderEffect only runs in the browser, so these DOM touches are SSR-safe.
     afterRenderEffect(() => {
       this.chat.messages();

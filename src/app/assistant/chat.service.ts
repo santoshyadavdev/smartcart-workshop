@@ -71,6 +71,11 @@ export class ChatService {
     }
   }
 
+  /** Stops the current reply so the shopper can ask something else. */
+  stop(): void {
+    this.isStreaming.set(false);
+  }
+
   reset(): void {
     this.state.set([]);
   }
