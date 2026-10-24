@@ -11,6 +11,7 @@ export type AgentEvent =
 export const MAX_MESSAGE_LENGTH = 2000;
 
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  /** `system` lets the storefront send page context, e.g. "The shopper is viewing the kitchen category". */
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }

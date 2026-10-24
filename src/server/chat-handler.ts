@@ -28,6 +28,7 @@ export async function handleChat(
   if (typeof messages === 'string') return badRequest(messages);
 
   const provider = createProviderFn(env);
+  console.log('[chat] provider=%s key=%s messages=%d', provider.name, env.GEMINI_API_KEY, messages.length);
   return new Response(streamEvents(provider, messages), {
     headers: {
       'content-type': 'text/event-stream; charset=utf-8',
@@ -44,7 +45,7 @@ function parseMessages(body: unknown): ChatMessage[] | string {
     return `messages must be an array of 1 to ${MAX_MESSAGES} items.`;
   }
   if (!messages.every(isChatMessage)) {
-    return `Each message needs a role of "user" or "assistant" and content of 1 to ${MAX_CONTENT_LENGTH} characters.`;
+    return `Each message needs a role of "user", "assistant" or "system" and content of 1 to ${MAX_CONTENT_LENGTH} characters.`;
   }
   if (messages[messages.length - 1].role !== 'user') {
     return 'The last message must come from the user.';
@@ -55,7 +56,7 @@ function parseMessages(body: unknown): ChatMessage[] | string {
 function isChatMessage(value: unknown): value is ChatMessage {
   const { role, content } = (value ?? {}) as Partial<Record<keyof ChatMessage, unknown>>;
   return (
-    (role === 'user' || role === 'assistant') &&
+    (role === 'user' || role === 'assistant' || role === 'system') &&
     typeof content === 'string' &&
     content.length >= 1 &&
     content.length <= MAX_CONTENT_LENGTH
