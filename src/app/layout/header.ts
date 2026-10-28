@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CartStore } from '../cart/cart.store';
 
@@ -19,6 +19,20 @@ import { CartStore } from '../cart/cart.store';
           </a>
         </nav>
       </div>
+      @if (!promoDismissed()) {
+        <div class="promo" data-testid="promo-banner">
+          <span>🎉 Buy 3 or more of any item and save 10%!</span>
+          <button
+            type="button"
+            class="btn btn-icon btn-ghost"
+            aria-label="Dismiss promotion"
+            data-testid="promo-dismiss"
+            (click)="dismissPromo()"
+          >
+            ✕
+          </button>
+        </div>
+      }
     </header>
   `,
   styles: `
@@ -58,6 +72,15 @@ import { CartStore } from '../cart/cart.store';
     .cart-link.active {
       background: var(--color-primary-soft);
     }
+    .promo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-1) var(--space-4);
+      background: var(--color-primary-soft);
+      font-weight: 600;
+    }
     .badge {
       min-width: 1.75rem;
       padding: 0.125rem var(--space-2);
@@ -72,4 +95,12 @@ import { CartStore } from '../cart/cart.store';
 })
 export class Header {
   protected readonly cart = inject(CartStore);
+  protected readonly promoDismissed = signal(
+    localStorage.getItem('smartcart.promo.dismissed') === 'true',
+  );
+
+  protected dismissPromo(): void {
+    localStorage.setItem('smartcart.promo.dismissed', 'true');
+    this.promoDismissed.set(true);
+  }
 }

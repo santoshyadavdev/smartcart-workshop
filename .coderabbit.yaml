@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: assertive
+  high_level_summary: true
+  sequence_diagrams: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - '.*' # also review PRs into the step-* checkpoint branches
+  path_instructions:
+    - path: 'src/app/**'
+      instructions: >-
+        Angular 22 zoneless app. Prefer signals/computed, standalone components and inject().
+        Flag direct browser globals (window, document, localStorage) used without isPlatformBrowser,
+        because this app is server-side rendered. Timers, listeners and streams must be cleaned up
+        (DestroyRef, AbortController) and must not start during SSR. Interactive elements need an
+        accessible name, toggles need aria-pressed, and focus indicators must stay visible.
+    - path: 'src/server/**'
+      instructions: >-
+        Runs in a Cloudflare Worker. No Node-only APIs. Validate all request input.
+        Never leak API keys or raw LLM errors to clients, and never log secrets.
+        Treat tool arguments from the LLM as untrusted. Only the server may set system prompts;
+        reject client-sent system or tool roles (prompt injection).
+    - path: '**/*.spec.ts'
+      instructions: >-
+        Vitest. Tests must be deterministic: no real network or Gemini calls, use fakes.
+        Check edge cases and that assertions are meaningful: tests must call the real code, not a vi.fn()
+        stand-in, avoid loose matchers like toBeTruthy() for numbers, and must not skip edge cases.
+    - path: 'e2e/**'
+      instructions: >-
+        Playwright. Prefer getByTestId/getByRole and web-first assertions. No fixed timeouts.
+        Use the mock provider only.
+  pre_merge_checks:
+    title:
+      mode: warning
+      requirements: 'Use Conventional Commits style (feat:, fix:, test:, chore:, docs:, ci:).'
+    custom_checks:
+      - name: Tests for new logic
+        mode: warning
+        instructions: >-
+          Fail if the PR adds or changes logic in src/ without adding or updating a *.spec.ts or e2e test.
+  tools:
+    eslint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    actionlint:
+      enabled: true
+code_generation:
+  unit_tests:
+    path_instructions:
+      - path: 'src/**/*.ts'
+        instructions: >-
+          Use Vitest globals (describe/it/expect, vi). Use TestBed for Angular services and components.
+          Fake fetch and LLM clients; never call real APIs.
+chat:
+  auto_reply: true

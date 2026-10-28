@@ -26,10 +26,20 @@ export class CartStore {
 
   readonly lines = this.state.asReadonly();
   readonly count = computed(() => this.lines().reduce((sum, line) => sum + line.quantity, 0));
-  readonly total = computed(() => {
+  readonly subtotal = computed(() => {
     const sum = this.lines().reduce((acc, line) => acc + line.product.price * line.quantity, 0);
     return Math.round(sum * 100) / 100;
   });
+  /** Bulk discount: 10% off any line with a quantity of 3 or more. */
+  readonly discount = computed(() => {
+    if (this.lines().length < 3) return 0;
+    const sum = this.lines().reduce(
+      (acc, line) => acc + line.product.price * line.quantity * 0.1,
+      0,
+    );
+    return Math.round(sum * 100) / 100;
+  });
+  readonly total = computed(() => Math.round((this.subtotal() - this.discount()) * 100) / 100);
 
   constructor() {
     effect(() => this.persist(this.lines()));

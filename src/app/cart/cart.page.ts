@@ -74,6 +74,16 @@ import { CartStore, MAX_QUANTITY } from './cart.store';
               <span class="muted">Items</span>
               <span>{{ cart.count() }}</span>
             </div>
+            <div class="row">
+              <span class="muted">Subtotal</span>
+              <span data-testid="cart-subtotal">{{ cart.subtotal() | currency: 'USD' }}</span>
+            </div>
+            @if (cart.discount() > 0) {
+              <div class="row discount">
+                <span>Bulk discount</span>
+                <span data-testid="cart-discount">−{{ cart.discount() | currency: 'USD' }}</span>
+              </div>
+            }
             <div class="row total">
               <span>Total</span>
               <span class="price" data-testid="cart-total">{{
@@ -181,6 +191,10 @@ import { CartStore, MAX_QUANTITY } from './cart.store';
     .row {
       display: flex;
       justify-content: space-between;
+    }
+    .discount {
+      color: var(--color-success);
+      font-weight: 600;
     }
     .total {
       padding-top: var(--space-3);
